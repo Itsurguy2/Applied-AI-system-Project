@@ -1,11 +1,21 @@
-id,title,artist,genre,mood,energy,tempo_bpm,valence,danceability,acousticness
-1,Sunrise City,Neon Echo,pop,happy,0.82,118,0.84,0.79,0.18
-2,Midnight Coding,LoRoom,lofi,chill,0.42,78,0.56,0.62,0.71
-3,Storm Runner,Voltline,rock,intense,0.91,152,0.48,0.66,0.10
-4,Library Rain,Paper Lanterns,lofi,chill,0.35,72,0.60,0.58,0.86
-5,Gym Hero,Max Pulse,pop,intense,0.93,132,0.77,0.88,0.05
-6,Spacewalk Thoughts,Orbit Bloom,ambient,chill,0.28,60,0.65,0.41,0.92
-7,Coffee Shop Stories,Slow Stereo,jazz,relaxed,0.37,90,0.71,0.54,0.89
-8,Night Drive Loop,Neon Echo,synthwave,moody,0.75,110,0.49,0.73,0.22
-9,Focus Flow,LoRoom,lofi,focused,0.40,80,0.59,0.60,0.78
-10,Rooftop Lights,Indigo Parade,indie pop,happy,0.76,124,0.81,0.82,0.35
+id,title,artist,genre,mood,energy,tempo_bpm,valence,danceability,acousticness,instrumentalness,speechiness,liveness
+1,Sunrise City,Neon Echo,pop,happy,0.82,118,0.84,0.79,0.18,0.04,0.05,0.08
+2,Midnight Coding,LoRoom,lofi,chill,0.42,78,0.56,0.62,0.71,0.85,0.03,0.10
+3,Storm Runner,Voltline,rock,intense,0.91,152,0.48,0.66,0.10,0.12,0.04,0.15
+4,Library Rain,Paper Lanterns,lofi,chill,0.35,72,0.60,0.58,0.86,0.92,0.02,0.07
+5,Gym Hero,Max Pulse,pop,intense,0.93,132,0.77,0.88,0.05,0.03,0.06,0.09
+6,Spacewalk Thoughts,Orbit Bloom,ambient,chill,0.28,60,0.65,0.41,0.92,0.95,0.02,0.06
+7,Coffee Shop Stories,Slow Stereo,jazz,relaxed,0.37,90,0.71,0.54,0.89,0.78,0.04,0.22
+8,Night Drive Loop,Neon Echo,synthwave,moody,0.75,110,0.49,0.73,0.22,0.89,0.03,0.08
+9,Focus Flow,LoRoom,lofi,focused,0.40,80,0.59,0.60,0.78,0.91,0.02,0.09
+10,Rooftop Lights,Indigo Parade,indie pop,happy,0.76,124,0.81,0.82,0.35,0.08,0.05,0.12
+11,Grey Skies,Verse Theory,hip-hop,melancholic,0.55,85,0.32,0.71,0.15,0.06,0.28,0.11
+12,Nocturne in Blue,Clara Voss,classical,melancholic,0.20,58,0.38,0.22,0.97,0.98,0.02,0.14
+13,Iron Collapse,Shatter Grid,metal,aggressive,0.97,168,0.25,0.52,0.04,0.21,0.05,0.18
+14,Velvet Sunday,Sable June,r&b,romantic,0.49,96,0.78,0.76,0.42,0.11,0.08,0.13
+15,Old Porch Radio,Dusty Holloway,country,nostalgic,0.44,104,0.67,0.63,0.74,0.09,0.04,0.20
+16,Sunshine Current,Coral Drift,reggae,euphoric,0.61,88,0.89,0.84,0.38,0.14,0.07,0.16
+17,Willow Thread,Ember & Ash,folk,dreamy,0.31,76,0.72,0.45,0.88,0.62,0.03,0.19
+18,Pulse Horizon,Zeta Drop,edm,euphoric,0.95,128,0.82,0.94,0.03,0.88,0.04,0.07
+19,Empty Bottle Blues,Remy Cole,blues,sad,0.38,68,0.29,0.48,0.81,0.45,0.05,0.28
+20,Neon Pulse,Starfield Unit,k-pop,energetic,0.88,138,0.85,0.90,0.08,0.05,0.07,0.10
