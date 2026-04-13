@@ -103,15 +103,12 @@ _BPM_MAX: float = 200.0
 
 
 def _proximity(song_val: float, target_val: float) -> float:
-    """
-    Linear proximity on a [0, 1]-scaled feature.
-    Returns 1.0 for a perfect match, 0.0 for maximum possible distance.
-    Clamped to [0, 1] to guard against out-of-range values.
-    """
+    """Return 1.0 for a perfect match, scaling linearly to 0.0 at maximum distance."""
     return max(0.0, 1.0 - abs(song_val - target_val))
 
 
 def _normalize_bpm(bpm: float) -> float:
+    """Normalize a BPM value to [0, 1] using the catalog's expected tempo range."""
     return (bpm - _BPM_MIN) / (_BPM_MAX - _BPM_MIN)
 
 
@@ -154,11 +151,7 @@ class Recommender:
         return sorted(self.songs, key=lambda s: self._score(s, user), reverse=True)[:k]
 
     def explain_recommendation(self, user: UserProfile, song: Song) -> str:
-        """
-        Return a human-readable string explaining why this song was recommended.
-        Every entry shows the points actually earned so the score is fully traceable.
-        Only contributions >= 0.10 pts are listed to avoid noise from near-zero terms.
-        """
+        """Return a pipe-separated explanation string showing points earned per feature."""
         reasons = []
 
         # Categorical — binary, so earned == max or 0
@@ -197,10 +190,7 @@ class Recommender:
 # ── Functional API (used by src/main.py) ─────────────────────────────────────
 
 def load_songs(csv_path: str) -> List[Dict]:
-    """
-    Load songs from a CSV file into a list of dicts.
-    Required by src/main.py
-    """
+    """Parse songs.csv and return each row as a typed dict with float/int fields."""
     songs: List[Dict] = []
     with open(csv_path, newline="", encoding="utf-8") as f:
         for row in csv.DictReader(f):
@@ -236,34 +226,7 @@ _NUMERIC_FEATURES: List[Tuple[str, str, str]] = [
 
 
 def score_song(song: Dict, user_prefs: Dict) -> Tuple[float, str]:
-    """
-    Judge a single song against the user's taste profile.
-
-    Scoring rules
-    -------------
-    Categorical (binary — full points or zero):
-        mood  match  +2.00
-        genre match  +1.50
-
-    Numeric proximity (scales linearly from 0 to max weight):
-        earned = weight * (1.0 - |song_value - user_target|)
-
-        energy           max +1.50
-        acousticness     max +1.00
-        instrumentalness max +0.75
-        valence          max +0.50
-        danceability     max +0.25
-        speechiness      max +0.25
-        liveness         max +0.25
-
-    Max possible total: 8.00
-
-    Returns
-    -------
-    (score, explanation)
-        score       float  — total weighted points, rounded to 3 decimal places
-        explanation str    — pipe-separated reasons, each showing points earned
-    """
+    """Score one song against user_prefs; return (total_points, explanation_string)."""
     score = 0.0
     reasons: List[str] = []
 
@@ -297,17 +260,7 @@ def score_song(song: Dict, user_prefs: Dict) -> Tuple[float, str]:
 def recommend_songs(
     user_prefs: Dict, songs: List[Dict], k: int = 5
 ) -> List[Tuple[Dict, float, str]]:
-    """
-    Rank every song in the catalog and return the top k.
-
-    This function has exactly three responsibilities:
-      1. Call score_song on every song  (judge the whole catalog)
-      2. Sort the scored results descending  (ranking rule)
-      3. Return the top k  (output slice)
-
-    The scoring logic lives entirely in score_song — this function
-    never touches weights or feature math directly.
-    """
+    """Score every song, sort by score descending, and return the top k results."""
     # Step 1 — score every song in the catalog
     # score_song returns (score, explanation); the * unpacks that pair directly
     # into the tuple so each element is (song, score, explanation).
