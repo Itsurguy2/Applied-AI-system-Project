@@ -134,11 +134,18 @@ You can add more tests in `tests/test_recommender.py`.
 
 ## Experiments You Tried
 
-Use this section to document the experiments you ran. For example:
+### Adversarial Profile Testing — Preference Dictionary Evaluation
 
-- What happened when you changed the weight on genre from 2.0 to 0.5
-- What happened when you added tempo or valence to the score
-- How did your system behave for different types of users
+Four "adversarial" user profiles were designed to expose edge cases in the scoring logic. The screenshot below captures the **Impossible Combo** profile (`genre: classical`, `mood: euphoric`) — a combination that no song in the catalog satisfies simultaneously. It shows the per-feature point breakdown for the highest-scoring classical song (*Nocturne in Blue*), which earned the genre match bonus (`+1.50`) but missed on mood, energy, and valence.
+
+![Preference dictionary evaluation showing per-feature scoring for the Impossible Combo adversarial profile](assets/preference-dictionary-eval.png)
+
+**What the four profiles revealed:**
+
+- **Sad Gym Rat** (`mood: sad`, `target_energy: 0.93`) — categorical bonuses (`+3.50` total) overpowered a large energy mismatch. The blues song won even though its energy was `0.38` vs. the target `0.93`.
+- **Genre Ghost** (`genre: bossa nova`) — the genre bonus silently dropped to zero for every song. The max achievable score fell to `6.50` with no warning to the user.
+- **The Centrist** (all targets at `0.5`, no genre/mood) — all scores clustered between `3.82` and `3.90`. The ranking became nearly arbitrary, decided by fractions of a point on energy proximity.
+- **Impossible Combo** (`genre: classical`, `mood: euphoric`) — mood match (`+2.00`) beat genre match (`+1.50`), so EDM ranked above classical. Confirmed that the `mood > genre` weight ordering has real consequences for users with strong genre identity.
 
 ---
 
