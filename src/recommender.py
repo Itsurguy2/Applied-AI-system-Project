@@ -61,12 +61,12 @@ class UserProfile:
 #    Mood match   +2.0   Listener intent is the strongest signal.  A user who
 #                        wants "focused" music cares more about *how it feels*
 #                        than which genre it belongs to.
-#    Genre match  +1.5   Style preference matters, but two songs of the same
+#    Genre match  +0.75  Style preference matters, but two songs of the same
 #                        genre with opposite moods are worse than two songs of
 #                        different genres with the same mood.
 #
 #  NUMERIC (proximity — full points for exact match, scales down linearly):
-#    Energy       +1.5   Best single numeric discriminator in the catalog.
+#    Energy       +3.0   Best single numeric discriminator in the catalog.
 #                        Separates "intense rock" (0.91) from "chill lofi" (0.35)
 #                        more reliably than any other single feature.
 #    Acousticness +1.0   Second-strongest discriminator; captures production
@@ -80,14 +80,14 @@ class UserProfile:
 #                        most songs score near zero anyway.
 #    Liveness     +0.25  Studio vs live feel. Tiebreaker-level weight.
 #
-#  MAX POSSIBLE SCORE = 2.0 + 1.5 + 1.5 + 1.0 + 0.75 + 0.50 + 0.25 + 0.25 + 0.25
-#                     = 8.0
+#  MAX POSSIBLE SCORE = 2.0 + 0.75 + 3.0 + 1.0 + 0.75 + 0.50 + 0.25 + 0.25 + 0.25
+#                     = 8.75
 #
 # ─────────────────────────────────────────────────────────────────────────────
 SCORE_WEIGHTS: Dict[str, float] = {
     "mood_match":       2.00,
-    "genre_match":      1.50,
-    "energy":           1.50,
+    "genre_match":      0.75,
+    "energy":           3.00,
     "acousticness":     1.00,
     "instrumentalness": 0.75,
     "valence":          0.50,
@@ -95,7 +95,7 @@ SCORE_WEIGHTS: Dict[str, float] = {
     "speechiness":      0.25,
     "liveness":         0.25,
 }
-MAX_SCORE: float = sum(SCORE_WEIGHTS.values())  # 8.0
+MAX_SCORE: float = sum(SCORE_WEIGHTS.values())  # 8.75
 
 # Tempo normalization range (broadened past catalog extremes for robustness)
 _BPM_MIN: float = 50.0

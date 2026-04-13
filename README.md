@@ -169,10 +169,9 @@ Read and complete `model_card.md`:
 
 [**Model Card**](model_card.md)
 
-Write 1 to 2 paragraphs here about what you learned:
+Building this recommender taught me that a scoring system is not just math — it is a series of value judgments disguised as numbers. Every weight in the `SCORE_WEIGHTS` dictionary is a claim about what matters most to a listener. Setting `energy` to 34% of the total score means deciding, on behalf of every user, that how intense a song feels is more important than what genre it is, what mood it carries, or how danceable it sounds. That choice feels neutral when you write it in code, but it has real consequences: it creates a filter bubble where low-energy users always see the same six acoustic songs and high-energy users always see the same eight loud tracks, regardless of anything else they tell the system. The adversarial profile experiments made this concrete — a user who asked for "sad gym music" received a slow acoustic blues ballad because the labels matched but the weights ignored the contradiction between the mood and the energy target.
 
-- about how recommenders turn data into predictions
-- about where bias or unfairness could show up in systems like this
+The deeper lesson is about how unfairness enters systems quietly. The catalog has 17 genres but 13 of them appear only once. Nine of the 14 moods are represented by a single song. A user who prefers folk, reggae, or classical music can only ever earn the genre bonus from one track. That is not a bug in the code — the code treats every genre equally. The unfairness comes from the data. Building this simulation made me understand why the people who design real recommendation systems have to think carefully not just about the algorithm but about whose music gets included in the training data, whose preferences get represented in the features, and whose listening habits the weights were optimized for. A system that works perfectly for the most common user type can fail silently for everyone else.
 
 
 ---

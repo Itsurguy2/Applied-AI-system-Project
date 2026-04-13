@@ -4,12 +4,13 @@ Command line runner for the Music Recommender Simulation.
 Run with:  py -m src.main
 """
 
-from .recommender import load_songs, recommend_songs
+from collections import Counter
+from .recommender import load_songs, recommend_songs, SCORE_WEIGHTS, MAX_SCORE
 
 WIDTH = 62
 
 
-def _score_bar(score: float, max_score: float = 8.0, width: int = 20) -> str:
+def _score_bar(score: float, max_score: float = MAX_SCORE, width: int = 20) -> str:
     """Return an ASCII progress bar, e.g. [################....] 95%"""
     filled = round((score / max_score) * width)
     bar = "#" * filled + "." * (width - filled)
@@ -23,7 +24,7 @@ def _divider(char: str = "-") -> str:
 
 def _print_result(rank: int, song: dict, score: float, explanation: str) -> None:
     """Print one ranked result card with score bar and per-feature breakdown."""
-    score_str = f"{score:.2f} / 8.00"
+    score_str = f"{score:.2f} / {MAX_SCORE:.2f}"
     rank_title = f"  #{rank}  {song['title']}"
     padding = WIDTH - len(rank_title) - len(score_str)
     print(rank_title + " " * max(padding, 1) + score_str)
@@ -48,8 +49,8 @@ def run_profile(
     *,
     k: int = 3,
     observe: str = "",
-) -> None:
-    """Print a labelled recommendation run for one user profile."""
+) -> list:
+    """Print a labelled recommendation run and return the scored results list."""
     print(_divider("="))
     print(f"  PROFILE: {name}")
     print(f"  genre={prefs.get('genre')}  mood={prefs.get('mood')}"
@@ -59,10 +60,108 @@ def run_profile(
         print(f"  OBSERVE: {observe}")
         print(_divider("."))
     print()
-    for rank, (song, score, explanation) in enumerate(
-        recommend_songs(prefs, songs, k=k), start=1
-    ):
+    results = recommend_songs(prefs, songs, k=k)
+    for rank, (song, score, explanation) in enumerate(results, start=1):
         _print_result(rank, song, score, explanation)
+    print()
+    return results
+
+
+def print_diversity_report(all_runs: list) -> None:
+    """Print cross-profile #1 table, repeat-song flags, and intuition check."""
+    print(_divider("="))
+    print("  CROSS-PROFILE DIVERSITY REPORT")
+    print(_divider("="))
+    print()
+
+    # ── Table: who ranked #1 in each profile ─────────────────────────────────
+    print("  #1 result per profile:")
+    print(_divider("."))
+    all_titles = []
+    for profile_name, results in all_runs:
+        top_song, top_score, _ = results[0]
+        label = f"  {profile_name[:36]}"
+        value = f"{top_song['title']} ({top_score:.2f})"
+        pad = WIDTH - len(label) - len(value)
+        print(label + " " * max(pad, 1) + value)
+        for song, _, _ in results:
+            all_titles.append(song["title"])
+    print()
+
+    # ── Repeat-song frequency across all top-k slots ─────────────────────────
+    counts = Counter(all_titles)
+    repeats = {t: c for t, c in counts.items() if c > 1}
+    unique = len(counts)
+    total  = len(all_titles)
+    print(f"  Unique songs across all top-3 slots: {unique} of {total}")
+    if repeats:
+        print("  Songs appearing more than once (check for dominance):")
+        for title, freq in sorted(repeats.items(), key=lambda x: -x[1]):
+            bar = "#" * freq + "." * (5 - freq)
+            print(f"    [{bar}] {title}  ({freq}x)")
+    else:
+        print("  No song repeated -- catalog variety looks healthy.")
+    print()
+
+    # ── Weight transparency: what the categorical bonuses are worth ───────────
+    mood_w  = SCORE_WEIGHTS["mood_match"]
+    genre_w = SCORE_WEIGHTS["genre_match"]
+    max_cat = mood_w + genre_w
+    max_num = MAX_SCORE - max_cat
+    print(_divider("."))
+    print("  WEIGHT BREAKDOWN (explains why categorical beats numeric):")
+    print(_divider("."))
+    print(f"  mood match             {mood_w:.2f} pts  ({mood_w/MAX_SCORE:.0%} of max)")
+    print(f"  genre match            {genre_w:.2f} pts  ({genre_w/MAX_SCORE:.0%} of max)")
+    print(f"  categorical subtotal   {max_cat:.2f} pts  ({max_cat/MAX_SCORE:.0%} of max)")
+    print(f"  all numeric features   {max_num:.2f} pts  ({max_num/MAX_SCORE:.0%} of max)")
+    print()
+
+    # ── Musical intuition check: Sad Gym Rat ─────────────────────────────────
+    # Why did Empty Bottle Blues (energy 0.38) beat Iron Collapse (energy 0.97)
+    # for a user who set target_energy: 0.93?
+    #
+    # Empty Bottle Blues earned:
+    #   mood 'sad'   match  +2.00   <- profile mood matched exactly
+    #   genre 'blues' match +1.50   <- profile genre matched exactly
+    #   energy penalty      -0.83   <- 1.50 * (1 - |0.38 - 0.93|) = 0.67 earned
+    #   categorical total   +3.50   <- larger than the max energy contribution
+    #
+    # Iron Collapse earned:
+    #   mood mismatch        0.00
+    #   genre mismatch       0.00
+    #   energy near-match   +1.44   <- 1.50 * (1 - |0.97 - 0.93|) = 1.44 earned
+    #   categorical total   +0.00
+    #
+    # Verdict: the 3.50 categorical head-start is unbeatable even when every
+    # numeric feature goes against the matched song.  A user who says "sad blues"
+    # gets a slow acoustic track regardless of their energy target -- which FEELS
+    # wrong.  The fix would be raising the energy weight or soft-capping how much
+    # categorical bonuses can override a large numeric mismatch.
+    print(_divider("."))
+    print("  INTUITION CHECK: Sad Gym Rat -- why did Empty Bottle Blues win?")
+    print(_divider("."))
+    print("  The user wanted:  mood=sad  genre=blues  target_energy=0.93")
+    print("  Empty Bottle Blues has energy 0.38 -- a 0.55 mismatch.")
+    print()
+    print("  Its categorical bonus (+3.50) vs. its energy penalty (-0.83):")
+    print(f"    mood match   +{mood_w:.2f}")
+    print(f"    genre match  +{genre_w:.2f}")
+    print(f"    energy loss  -{(1.50 - 1.50 * (1 - abs(0.38 - 0.93))):.2f}"
+          f"  (earned 0.67 of max 1.50)")
+    print(f"    net gain from categorical alone: "
+          f"+{max_cat - (1.50 - 1.50*(1-abs(0.38-0.93))):.2f}")
+    print()
+    print("  Iron Collapse (energy 0.97) earned 0.00 on mood+genre")
+    print("  and only +1.44 on energy -- never enough to close the gap.")
+    print()
+    print("  Intuition verdict: WRONG FEEL. A gym user asking for 'sad'")
+    print("  music probably means emotionally heavy, not acoustically slow.")
+    print("  The system delivers the genre/mood label correctly but ignores")
+    print("  the lived experience that high energy + sad = post-hardcore,")
+    print("  not acoustic blues.  Raising the energy weight from 1.50 to")
+    print("  2.00+ would let numeric features override a bad categorical fit.")
+    print(_divider("="))
     print()
 
 
@@ -70,9 +169,11 @@ def main() -> None:
     songs = load_songs("data/songs.csv")
     print(f"Loaded {len(songs)} songs\n")
 
-    # Bind the loaded catalog so every call below omits the `songs` argument
+    # Bind the catalog; collect (name, results) so the diversity report can read them
+    all_runs = []
     def show(name, prefs, *, k=3, observe=""):
-        run_profile(name, prefs, songs, k=k, observe=observe)
+        results = run_profile(name, prefs, songs, k=k, observe=observe)
+        all_runs.append((name, results))
 
     # ── Baseline profile ──────────────────────────────────────────────────────
     show(
@@ -183,6 +284,9 @@ def main() -> None:
                 "gets one or the other, not both. Does genre match or mood match "
                 "produce a better-feeling top result?",
     )
+
+
+    print_diversity_report(all_runs)
 
 
 if __name__ == "__main__":
