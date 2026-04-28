@@ -643,19 +643,17 @@ in the weights. Clear documentation is not just communication; it is a form of r
 Applied-AI-system-Project/
 ├── data/
 │   ├── songs.csv              # 20-song catalog, 13 audio features per song
-│   ├── genre_knowledge.json   # 17 genre documents for RAG enhancement (second data source)
 │   └── artist_images.json     # Deezer photo cache (auto-generated on first run)
 ├── src/
 │   ├── app.py                 # Streamlit multi-page app — main entry point
 │   ├── recommender.py         # Weighted scoring engine + EMA profile logic
-│   ├── chat_agent.py          # RAG retrieval + agentic workflow + few-shot specialization
+│   ├── chat_agent.py          # RAG retrieval + Claude agentic workflow + tools
 │   ├── platform_monitor.py    # Artist stats aggregator (simulated + live)
 │   ├── artist_images.py       # Deezer API image resolver with disk cache
 │   ├── youtube_client.py      # YouTube Data API v3 integration
 │   └── main.py                # Original CLI runner + adversarial test profiles
 ├── tests/
-│   ├── test_recommender.py    # Pytest suite — 14 unit tests for the scoring engine
-│   └── eval_harness.py        # Evaluation harness — 16 scenarios with confidence scores
+│   └── test_recommender.py    # Pytest suite for the scoring engine
 ├── assets/
 │   ├── terminal-output.png    # CLI recommender sample output screenshot
 │   └── preference-dictionary-eval.png
@@ -686,147 +684,9 @@ work fully offline.
 | UI | Streamlit 1.x + custom HTML/CSS |
 | AI model | Claude claude-sonnet-4-6 (Anthropic) |
 | Recommendation | Custom weighted scoring (Python, NumPy) |
-| RAG retrieval | Cosine similarity + genre knowledge docs (NumPy — no vector DB required) |
+| RAG retrieval | Cosine similarity (NumPy — no vector DB required) |
 | Visualizations | Plotly (radar chart, scatter plot, stacked bar) |
 | Artist photos | Deezer public API + JSON disk cache |
 | Platform stats | YouTube Data API v3, Last.fm API, deterministic simulation |
-| Tests | pytest + custom eval harness |
+| Tests | pytest |
 | Language | Python 3.10+ |
-
----
-
-## Extra Features
-
-### 1. RAG Enhancement — Hybrid Document + Audio Retrieval
-
-**What changed:** `chat_agent.py` now has a second data source: `data/genre_knowledge.json`.
-This file contains a rich text document for each of the 17 genres in the catalog — description,
-typical BPM/energy/acousticness ranges, key production characteristics, related moods, and
-production notes (e.g., "gated reverb snare is the most recognizable synthwave sonic signature").
-
-**How it works:** When a user sends a message, the new `rag_retrieve_docs()` function keyword-
-searches the query against genre-specific vocabulary lists and returns the top-2 matching genre
-documents. These are injected into the Claude context window alongside the existing audio feature
-cosine similarity results.
-
-**How it measurably improves output:** Before this change, Claude's context contained only raw
-audio feature vectors (`energy: 0.35, acousticness: 0.86, …`). After the change, it also
-receives vocabulary like "vinyl crackle," "tape wobble," "brushed snare," and "warm low-end" —
-the actual language of the genre. The `measure_response_quality()` function in `chat_agent.py`
-counts audio feature mentions, production vocabulary, and numeric values cited per response.
-Responses generated with `run_agent_specialized()` (which uses both RAG sources) score
-measurably higher on vocabulary richness than the baseline `run_agent()` output.
-
-**Files:** `src/chat_agent.py` — `load_genre_knowledge()`, `rag_retrieve_docs()` •
-`data/genre_knowledge.json` — 17 genre documents
-
----
-
-### 2. Agentic Workflow Enhancement — Plan-First Multi-Step Reasoning
-
-**What changed:** Added a `plan_reasoning` tool and `TOOLS_WITH_PLAN` tool list. When the app
-calls `run_agent_with_plan()`, Claude must call `plan_reasoning` as its first tool use before
-it is allowed to call any search or recommendation tools. This creates three observable,
-logged intermediate steps:
-
-| Step | Type | Description |
-|---|---|---|
-| 1 | `plan` | Claude states its interpretation, search strategy, and expected audio profile |
-| 2 | `tool_call` | Claude executes `search_songs` / `get_top_recommendations` |
-| 3 | `synthesis` | Claude generates the final grounded response |
-
-**Why this matters:** In the original `run_agent()`, the only observable output was the final
-text. There was no way to see why Claude chose to call `search_songs` instead of
-`get_top_recommendations`, or what target profile it was reasoning toward. With the plan step,
-the full decision chain is captured in `reasoning_trace` — a list of dicts, one per step,
-each with `type`, `name`, `content`, and `elapsed_ms`. This trace can be displayed in the UI
-as an expandable "How I reasoned through this" panel and logged for debugging.
-
-**Files:** `src/chat_agent.py` — `_PLAN_TOOL`, `TOOLS_WITH_PLAN`, `_PLAN_FIRST_SYSTEM`,
-`run_agent_with_plan()`
-
----
-
-### 3. Fine-Tuning / Specialization — Few-Shot Response Style
-
-**What changed:** Added `FEW_SHOT_EXAMPLES` (3 worked Q&A pairs) and
-`SPECIALIZED_SYSTEM_PROMPT` to `chat_agent.py`. The few-shot examples demonstrate the
-SoundMatch voice — the three non-obvious behaviors a bare Claude prompt doesn't produce:
-
-1. Citing specific audio feature percentages inline ("lofi at 35% energy, acousticness 86%")
-2. Using production vocabulary ("four-on-the-floor kick," "gated reverb snare," "vinyl warmth")
-3. Comparing two catalog options within the same response instead of picking just one
-
-**How the difference is measured:** The `measure_response_quality()` function counts:
-- `feature_mentions` — audio feature terms present (energy, valence, acousticness, …)
-- `production_vocab` — production/instrument terms (synth, reverb, sidechain, blast-beat, …)
-- `song_references` — pairs of quote marks (song/artist name citations)
-- `numeric_values` — percentage figures or decimal values cited
-
-A baseline `run_agent()` response to "something chill to study" typically scores 8-12 on the
-composite. The same query through `run_agent_specialized()` typically scores 20-28 because the
-few-shot examples train Claude to cite feature numbers it would otherwise omit.
-
-**Files:** `src/chat_agent.py` — `FEW_SHOT_EXAMPLES`, `SPECIALIZED_SYSTEM_PROMPT`,
-`run_agent_specialized()`, `measure_response_quality()`
-
----
-
-### 4. Test Harness — Evaluation Script with Confidence Ratings
-
-**What built:** `tests/eval_harness.py` — a standalone script that runs 16 predefined
-scenarios through the recommender engine and RAG utilities with no API key required.
-
-```
-python tests/eval_harness.py
-```
-
-Sample output:
-
-```
-========================================================================
-  SOUNDMATCH EVALUATION HARNESS
-  16 scenarios  |  catalog: 20 songs  |  MAX_SCORE=8.75
-========================================================================
-
-  Recommender Quality
-  --------------------------------------------------------------------
-  #01  Pop/Happy Baseline                    PASS   98.7%   "Sunrise City" (pop/happy)
-  #02  Lofi/Focused Specialist               PASS   99.6%   acousticness=0.78 > 0.65
-  #03  High-Energy Seeker                    PASS   98.9%   "Pulse Horizon" energy=0.95 > 0.85
-  #04  Classical/Melancholic                 PASS   99.2%   "Nocturne in Blue" energy=0.20
-  #05  Genre Ghost (bossa nova)              PASS   89.6%   5 results via numeric matching
-  #06  Centrist (all 0.50, cold-start)       PASS   61.5%   score band=2.8% (< 20% expected)
-  #07  Impossible Combo (contradictory)      PASS      —    no crash, 5 results returned
-  #08  K-Limiting: k=1                       PASS      —    returned 1 result
-  #09  K-Limiting: k=3                       PASS      —    returned 3 results
-  #10  Score Separation (rank quality)       PASS      —    gap=34.3% of MAX_SCORE
-  #11  Empty Catalog                         PASS      —    returned empty list
-
-  RAG & Intent Mapping
-  --------------------------------------------------------------------
-  #12  RAG Ordering: high-energy query       PASS      —    "Pulse Horizon" energy=0.95 ranked first
-  #13  RAG Ordering: low-energy/acoustic     PASS      —    "Nocturne in Blue" energy=0.20 ranked first
-  #14  Intent Mapping: chill study           PASS      —    energy=0.33 | acousticness=0.78
-  #15  Intent Mapping: gym workout           PASS      —    energy=0.92 | danceability=0.82
-
-  RAG Enhancement (Genre Docs)
-  --------------------------------------------------------------------
-  #16  RAG Enhancement: genre doc retrieval  PASS      —    17 genres loaded | retrieved: ['Jazz']
-
-========================================================================
-  RESULTS: 16/16 passed (100%)   Avg confidence: 91.2%   Runtime: 0.002 s
-========================================================================
-```
-
-**What each scenario type tests:**
-
-| Scenario type | What it proves |
-|---|---|
-| Profile quality (#1–5) | Recommender returns the right song for a given taste |
-| Robustness (#6–11) | System handles edge cases (cold-start, k-limits, empty catalog) |
-| RAG ordering (#12–13) | Cosine similarity ranks acoustically similar songs correctly |
-| Intent mapping (#14–15) | Natural language correctly maps to feature targets |
-| Genre docs (#16) | Second data source loads and retrieves by keyword |
-
-**Files:** `tests/eval_harness.py`
