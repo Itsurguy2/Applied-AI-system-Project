@@ -42,6 +42,65 @@ addresses both problems:
 
 ## Architecture Overview
 
+flowchart TD
+    User(["👤 User"])
+
+    subgraph UI["Streamlit App — app.py"]
+        Nav["🔝 Top Nav Bar\nHome · Battles · Discover\nTaste DNA · Chat · Learn · Monitor"]
+        Home["🏠 Home\nFeatured banner · Quick tiles\nArtist cards · Trending"]
+        Battles["⚔️ Battles\nMainstream vs Indie\nEMA Profile Update α=0.30"]
+        Discover["🔍 Discover\nTop-K Recommendations\nMood & Genre filters"]
+        DNA["🧬 My Taste DNA\nRadar chart · Feature bars\nBattle history"]
+        Chat["💬 Chat\nMulti-turn AI assistant\nExample prompts"]
+        Learn["🎓 Learn\n8 production categories\n32 curated YouTube videos"]
+        Monitor["📊 Monitor\nCross-platform artist stats\nSoundMatch Talent Score"]
+    end
+
+    subgraph Engine["Recommendation Engine — recommender.py"]
+        LoadCSV["📂 load_songs\nsongs.csv → 20 songs\n17 genres · 14 moods"]
+        ScoreSong["⚖️ score_song\nMood +2.0 · Genre +0.75\nEnergy +3.0 · MAX=8.75"]
+        RecommendSongs["🏆 recommend_songs\nScore all songs\nReturn top-K ranked"]
+        EMA["🔄 EMA Update\nnew = α×song + 1-α×old\nα = 0.30"]
+    end
+
+    subgraph RAG["RAG + Agentic Workflow — chat_agent.py"]
+        IntentMap["🗣️ intent_to_features\nNLP → feature targets\nchill / workout / sad…"]
+        CosineSim["📐 rag_retrieve\nCosine similarity\nTop-4 context songs"]
+        Claude["🤖 Claude claude-sonnet-4-6\nSystem prompt + Tools\nMax 5 iterations"]
+        Tools["🔧 Tools\nsearch_songs\nget_top_recommendations\nget_song_details"]
+    end
+
+    subgraph External["External Services"]
+        YT["▶️ YouTube Data API v3\nLesson search\nFallback: curated IDs"]
+        LastFM["♫ Last.fm API\nListener counts\nPlay counts"]
+        YTAPI2["▶️ YouTube API\nSubscriber counts\nView counts"]
+    end
+
+    UserProfile[("🎵 User Profile\ntarget_energy · valence\nacousticness · genre · mood")]
+
+    User --> Nav
+    Nav --> Home & Battles & Discover & DNA & Chat & Learn & Monitor
+
+    Battles -->|"win pick"| EMA
+    EMA -->|"updates"| UserProfile
+
+    Discover --> RecommendSongs
+    Home --> RecommendSongs
+    RecommendSongs --> ScoreSong
+    ScoreSong --> LoadCSV
+    UserProfile -->|"taste profile"| ScoreSong
+
+    Chat --> IntentMap
+    IntentMap --> CosineSim
+    CosineSim --> LoadCSV
+    CosineSim -->|"context songs"| Claude
+    Claude <-->|"tool calls"| Tools
+    Tools --> ScoreSong
+
+    Learn --> YT
+    Monitor --> LastFM & YTAPI2
+
+
 ```
 ┌───────────────────────────────────────────────────────────┐
 │                   Streamlit UI  (app.py)                   │
