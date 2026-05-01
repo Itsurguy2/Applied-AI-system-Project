@@ -121,60 +121,86 @@ DISCOVERY_CHANNELS = [
     {"name": "Pitchfork Live",   "url": "https://www.youtube.com/@pitchfork",     "query": "Pitchfork live music"},
 ]
 
-# Music production learning content
+# Music production learning content — updated 2025
 PRODUCTION_LESSONS = [
     {
-        "category": "🥁 Beat Making",
-        "search_query": "beat making tutorial for beginners 2024",
+        "category": "🥁 Beat Making & Drum Programming",
+        "search_query": "beat making drum programming tutorial 2025",
         "videos": [
-            _v("FY3OtFtzGxY", "How To Make Beats For Beginners", "Busy Works Beats"),
-            _v("ognIBSIxVXc", "Music Production Complete Guide", "In The Mix"),
-            _v("d3x4JQAkAeU", "Beat Making From Scratch", "Produce Like A Pro"),
+            _v("FY3OtFtzGxY", "How To Make Beats For Beginners (Full Guide)", "Busy Works Beats"),
+            _v("ognIBSIxVXc", "Complete Music Production Workflow", "In The Mix"),
+            _v("d3x4JQAkAeU", "Beat Making From Scratch — No Experience Needed", "Produce Like A Pro"),
+            _v("oxJ8f6BGLPE", "How to Make Lo-Fi Hip Hop Beats", "Andrew Huang"),
         ],
     },
     {
         "category": "🎚️ Mixing & Mastering",
-        "search_query": "how to mix music tutorial beginners",
+        "search_query": "how to mix and master music at home 2025",
         "videos": [
-            _v("TEjOdqZFvhY", "How to Mix Music — Beginner's Guide", "In The Mix"),
-            _v("GFVhXMEOFKs", "EQ Explained — The Ultimate Guide", "FabFilter"),
-            _v("H7dCLnimDOs", "Mastering Your Music at Home", "Produce Like A Pro"),
+            _v("TEjOdqZFvhY", "Mixing for Beginners — Full Walkthrough", "In The Mix"),
+            _v("GFVhXMEOFKs", "EQ Explained — The Ultimate Producer Guide", "FabFilter"),
+            _v("H7dCLnimDOs", "Mastering Your Music at Home (2025)", "Produce Like A Pro"),
+            _v("Zv4PIHZsDMg", "Loudness, Compression & Limiting Explained", "In The Mix"),
         ],
     },
     {
-        "category": "🎹 Melody & Chords",
-        "search_query": "music theory chord progressions producers tutorial",
+        "category": "🎹 Melody, Chords & Music Theory",
+        "search_query": "music theory chord progressions melody for producers 2025",
         "videos": [
-            _v("rgaTLrZGlk0", "Music Theory for Producers", "Andrew Huang"),
-            _v("JiNKlhspdkg", "How to Write a Melody", "Berklee Online"),
-            _v("Qiumzv0HTOY", "Chord Progressions That Work", "Adam Neely"),
+            _v("rgaTLrZGlk0", "Music Theory for Producers — Essential Concepts", "Andrew Huang"),
+            _v("JiNKlhspdkg", "How to Write a Memorable Melody", "Berklee Online"),
+            _v("Qiumzv0HTOY", "Chord Progressions Every Producer Should Know", "Adam Neely"),
+            _v("b-IOPB6pBpM", "Advanced Harmony for Modern Producers", "12tone"),
         ],
     },
     {
-        "category": "🎤 Recording Vocals",
-        "search_query": "how to record vocals at home professional sound",
+        "category": "🎤 Recording & Vocal Production",
+        "search_query": "how to record and produce vocals at home studio 2025",
         "videos": [
-            _v("V_SpF4QGPCM", "How to Record Vocals at Home", "Produce Like A Pro"),
-            _v("6SseK7hUXTU", "Vocal Production Tips", "In The Mix"),
-            _v("B9LRLKuhlHE", "Home Studio Recording Setup", "RecordingRevolution"),
+            _v("V_SpF4QGPCM", "How to Record Professional Vocals at Home", "Produce Like A Pro"),
+            _v("6SseK7hUXTU", "Vocal Processing & Tuning Tips", "In The Mix"),
+            _v("B9LRLKuhlHE", "Home Studio Setup on Any Budget", "RecordingRevolution"),
+            _v("u7cA0AvZbhc", "Auto-Tune vs Melodyne — When to Use Each", "Produce Like A Pro"),
         ],
     },
     {
-        "category": "☕ Lo-Fi & Indie",
-        "search_query": "how to make lofi hip hop music tutorial",
+        "category": "🔊 Sound Design & Synthesis",
+        "search_query": "sound design synthesis tutorial for music producers 2025",
         "videos": [
-            _v("oxJ8f6BGLPE", "How to Make Lo-Fi Hip Hop", "Andrew Huang"),
-            _v("wStXmSJAloM", "Indie Production Walkthrough", "Produce Like A Pro"),
-            _v("KmzHRPyBAmQ", "How to Release Music Independently", "Ari's Take"),
+            _v("sOO1PKPoxyE", "Sound Design From Scratch — Beginner to Pro", "In The Mix"),
+            _v("IuV80JfSBKo", "How Synthesizers Work — Full Explanation", "Andrew Huang"),
+            _v("Eiw9YnRe64E", "Serum Sound Design Masterclass", "Busy Works Beats"),
+            _v("pf1bGhPAcSw", "Designing Bass Sounds for Electronic Music", "Produce Like A Pro"),
         ],
     },
     {
-        "category": "🎧 Independent Artist Tips",
-        "search_query": "independent artist music marketing tips 2024",
+        "category": "🤖 AI Tools in Music Production",
+        "search_query": "AI music production tools plugins workflow 2025",
         "videos": [
-            _v("I7HtQgQiRwA", "Music Marketing for Indie Artists", "Damien Keyes"),
-            _v("KmzHRPyBAmQ", "Release Music Independently", "Ari's Take"),
-            _v("q5G7tKv0Tbc", "Getting Placed on Playlists", "Music Gateway"),
+            _v("6L9R1UYHbPc", "How Producers Are Using AI Right Now", "Andrew Huang"),
+            _v("T0_HmWIDe7Q", "iZotope Neutron AI Mixing — Full Walkthrough", "In The Mix"),
+            _v("tqByJlK75rM", "AI Mastering vs. Human Mastering — Honest Review", "Produce Like A Pro"),
+            _v("KmzHRPyBAmQ", "Protecting Your Music in the Age of AI", "Ari's Take"),
+        ],
+    },
+    {
+        "category": "☕ Lo-Fi, Indie & DIY Releases",
+        "search_query": "lofi indie music production DIY release tips 2025",
+        "videos": [
+            _v("wStXmSJAloM", "Indie Production Walkthrough — Full Session", "Produce Like A Pro"),
+            _v("5IDifyke-OE", "Making Lo-Fi Beats with Just a Laptop", "Andrew Huang"),
+            _v("f4Mc-NYPHaQ", "How to Self-Release Your Music in 2025", "Ari's Take"),
+            _v("q5G7tKv0Tbc", "Playlist Pitching Strategy for Independent Artists", "Music Gateway"),
+        ],
+    },
+    {
+        "category": "📈 Music Marketing & Growing an Audience",
+        "search_query": "music marketing grow audience independent artist 2025",
+        "videos": [
+            _v("I7HtQgQiRwA", "Music Marketing Blueprint for Indie Artists", "Damien Keyes"),
+            _v("v4JMxUbuoQA", "TikTok & Short-Form Video Strategy for Musicians", "Damien Keyes"),
+            _v("c8r5C3MXMAE", "Building a Fanbase from Zero in 2025", "Ari's Take"),
+            _v("ZdGqHaCJ4MY", "Getting Sync Licensing Deals — Step by Step", "Music Gateway"),
         ],
     },
 ]

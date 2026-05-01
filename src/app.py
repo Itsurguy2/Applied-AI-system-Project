@@ -60,7 +60,7 @@ st.set_page_config(
     page_title="SoundMatch",
     page_icon="S",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",
 )
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
@@ -105,8 +105,18 @@ def inject_css() -> None:
         }
 
         [data-testid="stSidebar"] {
-            background: #080810 !important;
+            background: #0d0d18 !important;
             border-right: 1px solid #1a1a28 !important;
+        }
+        [data-testid="stSidebar"],
+        [data-testid="stSidebar"] p,
+        [data-testid="stSidebar"] span,
+        [data-testid="stSidebar"] label,
+        [data-testid="stSidebar"] div,
+        [data-testid="stSidebar"] h1,
+        [data-testid="stSidebar"] h2,
+        [data-testid="stSidebar"] h3 {
+            color: #ffffff !important;
         }
         #MainMenu, footer, header { visibility: hidden; }
         .block-container { padding-top: 1.5rem; padding-bottom: 3rem; max-width: 1400px; }
@@ -342,6 +352,7 @@ def inject_css() -> None:
             letter-spacing: 0.02em !important;
             box-shadow: 0 2px 12px #a855f740 !important;
         }
+
         .stButton > button:hover {
             opacity: 0.88 !important;
             transform: scale(1.03) !important;
@@ -1888,10 +1899,10 @@ def _lesson_scroll_html(videos: list) -> str:
 
 
 def page_learn() -> None:
-    st.markdown("## Music Production — Learn")
+    st.markdown("## 🎓 Music Production — Learn")
     st.caption(
-        "Learn how to make quality music from industry professionals. "
-        "Click any video to watch on YouTube."
+        "Eight curated tracks covering everything from beat making to AI tools — "
+        "all from working producers and educators. Click any video to watch on YouTube."
     )
 
     if not _YT_OK:
@@ -2074,6 +2085,32 @@ def page_chat(songs: list) -> None:
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────
+def render_topnav() -> None:
+    _PAGES = [
+        ("Home",         "🏠 Home"),
+        ("Battles",      "⚔️ Battles"),
+        ("Discover",     "🔍 Discover"),
+        ("My Taste DNA", "🧬 Taste DNA"),
+        ("Chat",         "💬 Chat"),
+        ("Learn",        "🎓 Learn"),
+        ("Monitor",      "📊 Monitor"),
+    ]
+    st.markdown(
+        "<div style='display:flex;align-items:center;gap:10px;margin-bottom:4px;'>"
+        "<span style='font-size:1.3rem;font-weight:900;color:#ffffff;"
+        "letter-spacing:-0.02em;margin-right:8px;'>🎵 SoundMatch</span>"
+        "</div>",
+        unsafe_allow_html=True,
+    )
+    cols = st.columns(len(_PAGES))
+    for col, (key, label) in zip(cols, _PAGES):
+        with col:
+            if st.button(label, key=f"topnav_{key}", use_container_width=True):
+                st.session_state.page = key
+                st.rerun()
+    st.divider()
+
+
 def main() -> None:
     inject_css()
     init_state()
@@ -2085,101 +2122,8 @@ def main() -> None:
             tuple(s["id"] for s in songs)
         )
 
-    with st.sidebar:
-        st.markdown("""
-        <div style="padding:4px 4px 0;">
-            <div style="font-size:1.4rem;font-weight:900;
-                        background:linear-gradient(135deg,#a855f7,#06b6d4);
-                        -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-                        background-clip:text;margin-bottom:2px;">
-                SoundMatch
-            </div>
-            <div style="font-size:0.72rem;color:#444;margin-bottom:18px;">
-                Discover music that gets you
-            </div>
-        </div>""", unsafe_allow_html=True)
-
-        page = st.radio(
-            "nav", PAGES,
-            index=PAGES.index(st.session_state.page),
-            label_visibility="collapsed",
-        )
-        st.session_state.page = page
-
-        st.divider()
-
-        p = st.session_state.user_profile
-        n = len(st.session_state.battle_history)
-        st.markdown(f"""
-        <div class="sidebar-profile">
-            <div style="color:#777;font-weight:700;font-size:0.72rem;
-                        letter-spacing:0.08em;margin-bottom:6px;">YOUR PROFILE</div>
-            <div>Genre: <span style="color:#a855f7;">{p['genre'].title()}</span></div>
-            <div>Mood: <span style="color:#06b6d4;">{p['mood'].title()}</span></div>
-            <div>Battles: <span style="color:#ddd;">{n}</span></div>
-            <div style="margin-top:8px;color:#a855f7;font-weight:700;font-size:0.8rem;">
-                {tastemaker_title(n)}
-            </div>
-        </div>""", unsafe_allow_html=True)
-
-        # ── Sidebar AI Assistant ──────────────────────────────────────────────
-        st.divider()
-        st.markdown('<div class="sbai-header">AI ASSISTANT</div>', unsafe_allow_html=True)
-
-        has_ai = bool(os.environ.get("ANTHROPIC_API_KEY")) and _CHAT_OK
-        sb_hist = st.session_state.sidebar_chat_history
-
-        # Show the last 4 messages (2 turns) as compact bubbles
-        for msg in sb_hist[-4:]:
-            if msg["role"] == "user":
-                short = msg["content"][:110] + ("…" if len(msg["content"]) > 110 else "")
-                st.markdown(f'<div class="sbai-bubble-user">{short}</div>',
-                            unsafe_allow_html=True)
-            else:
-                short = msg["content"][:180] + ("…" if len(msg["content"]) > 180 else "")
-                st.markdown(
-                    f'<div class="sbai-ai-label">SoundMatch AI</div>'
-                    f'<div class="sbai-bubble-ai">{short}</div>',
-                    unsafe_allow_html=True,
-                )
-
-        if has_ai:
-            sb_q = st.text_input(
-                "ai_in", placeholder="Ask anything about music…",
-                key="sbai_q", label_visibility="collapsed",
-            )
-            c_send, c_clr = st.columns([3, 1])
-            with c_send:
-                send_clicked = st.button("→ Ask AI", key="sbai_send",
-                                         use_container_width=True)
-            with c_clr:
-                if sb_hist and st.button("X", key="sbai_clr", use_container_width=True):
-                    st.session_state.sidebar_chat_history = []
-                    st.rerun()
-
-            if send_clicked and sb_q.strip():
-                prior = [{"role": m["role"], "content": m["content"]}
-                         for m in sb_hist]
-                sb_hist.append({"role": "user", "content": sb_q.strip()})
-                with st.spinner("Thinking…"):
-                    reply = chat_with_history(
-                        sb_q.strip(), prior, songs,
-                        st.session_state.user_profile,
-                    )
-                sb_hist.append({"role": "assistant", "content": reply})
-                st.session_state.sidebar_chat_history = sb_hist
-                st.rerun()
-        else:
-            st.markdown(
-                '<div class="sbai-no-key">'
-                'AI assistant coming soon — stay tuned!'
-                '</div>',
-                unsafe_allow_html=True,
-            )
-            if st.button("Open Chat Page", key="sbai_goto",
-                         use_container_width=True):
-                st.session_state.page = "Chat"
-                st.rerun()
+    render_topnav()
+    page = st.session_state.page
 
     if   page == "Home":          page_home(songs)
     elif page == "Battles":       page_battles(songs)
@@ -2190,5 +2134,4 @@ def main() -> None:
     elif page == "Monitor":       page_monitor(songs)
 
 
-if __name__ == "__main__":
-    main()
+main()
